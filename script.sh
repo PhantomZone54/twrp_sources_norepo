@@ -77,9 +77,6 @@ rm *.filelist.txt
 # Take md5
 md5sum $RecName-$BRANCH-norepo-*.tar.xz > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 
-# Move the filelist for upload too
-mv $RecName-$BRANCH-norepo.fullfilelist.tar.xz ~/project/files/ || echo "move filelist error"
-
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
 du -sh ~/project/files/
@@ -93,6 +90,6 @@ for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHo
 echo -e " Done uploading to AFH"
 
 cd ~/project/
-ghr -u $GitHubName -t $GITHUB_TOKEN -b 'Relesing Latest $RecName Sources'  v$version files
+ghr -u $GitHubName -t $GITHUB_TOKEN -b 'Relesing Latest $RecName Sources' -recreate v$version files
 
 echo -e "\nCongratulations! Job Done!"
