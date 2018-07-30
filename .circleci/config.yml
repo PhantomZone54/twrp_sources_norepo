@@ -1,0 +1,50 @@
+version: 2.0
+
+jobs:
+  "primary":
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Run first Parallel job
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch1 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
+
+
+  "secondary":
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Run second Parallel job
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch2 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
+
+
+  "third":
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Run third Parallel job
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
+
+
+  "fourth":
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Run fourth Parallel job
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - "primary"
+      - "secondary"
+      - "third"
+      - "fourth"
