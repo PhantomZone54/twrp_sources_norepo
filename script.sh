@@ -90,6 +90,6 @@ for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHo
 echo -e " Done uploading to AFH"
 
 cd ~/project/
-ghr -u $GitHubName -t $GITHUB_TOKEN -b 'Relesing Latest $RecName Sources' -recreate v$version files
+ghr -u $GitHubName -t $GITHUB_TOKEN -b 'Relesing Latest \$RecName Sources' v$version-$(date +%Y%m%d) files
 
 echo -e "\nCongratulations! Job Done!"
