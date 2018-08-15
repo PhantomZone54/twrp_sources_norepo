@@ -66,7 +66,7 @@ export XZ_OPT=-9e
 if [ $DDF -gt 8192 ]; then
   mkdir parts
   echo -e "Compressing and Making 2GB parts Because of Huge Data Amount \nBe Patient..."
-  time tar -I pxz -cf - $RecName-$BRANCH-norepo-$(date +%Y%m%d)/ | split -b 2048M - parts/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  time tar -I pxz -cf - $RecName/ | split -b 2048M - parts/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   SHALLOW="parts/$RecName-$BRANCH-norepo*"
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
