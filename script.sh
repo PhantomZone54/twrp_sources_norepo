@@ -35,7 +35,7 @@ git config --global user.email $GitHubMail && git config --global user.name $Git
 git config --global color.ui true
 
 echo -e "Main Function Starts HERE"
-cd $DIR; mkdir $RecName/sha; cd $RecName
+cd $DIR; mkdir $RecName; cd $RecName
 
 echo -e "Initialize the repo data fetching"
 repo init -q -u $LINK -b $BRANCH --depth 1 || repo init -q -u $LINK --depth 1
