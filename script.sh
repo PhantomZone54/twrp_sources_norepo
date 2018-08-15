@@ -46,10 +46,11 @@ echo -e "\nSHALLOW Source Syncing done\n"
 
 rm -rf .repo/
 
-# Show Total Sizes of the checked-out non-repo files
+# Show and Record Total Sizes of the checked-out non-repo files
 cd $DIR
 echo -en "The total size of the checked-out files is ---  "
 du -sh $RecName
+DDF=$(du -sh -BM $RecName | awk '{print $1}' | sed 's/M//')
 cd $RecName
 
 # Get the Version
@@ -61,21 +62,42 @@ echo -e "Compressing files --- "
 echo -e "Please be patient, this will take time"
 
 export XZ_OPT=-9e
-time tar -I pxz -cf $RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+
+if [ $DDF -gt 8192 ]; then
+  mkdir parts
+  echo -e "Compressing and Making 2GB parts Because of Huge Data Amount \nBe Patient..."
+  time tar -I pxz -cf - $RecName-$BRANCH-norepo-$(date +%Y%m%d)/ | split -b 2048M - parts/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  SHALLOW="parts/$RecName-$BRANCH-norepo*"
+  # Show Total Sizes of the compressed .repo
+  echo -en "Final Compressed size of the consolidated checked-out files is ---  "
+  du -sh parts
+else
+  time tar -I pxz -cf $RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+  echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
+  du -sh $RecName-$BRANCH-norepo*.tar.xz
+fi
+
 echo -e "Compression Done"
 
-mkdir -p ~/project/files/ && mv $RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz ~/project/files/
+mkdir -p ~/project/files/
+
+if [ $DDF -gt 8192 ]; then
+  mv $RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz ~/project/files/
+else
+  mv parts/$RecName-$BRANCH-norepo-* ~/project/files/
+fi
+
 cd ~/project/files
 
 # Make a Compressed file list for future reference
-tar -tJvf *.tar.xz | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).filelist.txt
+tar -tJvf *.tar.xz.* | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).filelist.txt
 echo -en "Size of filelist text is -- " && du -sh *.filelist.txt
 tar -I pxz -cf $RecName-$BRANCH-norepo.fullfilelist.tar.xz *.txt
 echo -en "Size of Compressed filelist is -- " && du -sh *.fullfilelist.tar.xz
 rm *.filelist.txt
 
 # Take md5
-md5sum $RecName-$BRANCH-norepo-*.tar.xz > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
+md5sum $RecName-$BRANCH-norepo-*.tar.xz.* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
@@ -90,6 +112,6 @@ for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHo
 echo -e " Done uploading to AFH"
 
 cd ~/project/
-ghr -u $GitHubName -t $GITHUB_TOKEN -b 'Relesing Latest \$RecName Sources' v$version-$(date +%Y%m%d) files
+ghr -u $GitHubName -t $GITHUB_TOKEN -b "Releasing Latest TWRP Sources using OmniROM's Minimal-Manifest" v$version-$(date +%Y%m%d) files
 
 echo -e "\nCongratulations! Job Done!"
