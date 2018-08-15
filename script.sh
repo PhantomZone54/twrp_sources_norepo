@@ -35,7 +35,7 @@ git config --global user.email $GitHubMail && git config --global user.name $Git
 git config --global color.ui true
 
 echo -e "Main Function Starts HERE"
-cd $DIR; mkdir $RecName; cd $RecName
+cd $DIR; mkdir $RecName/sha; cd $RecName
 
 echo -e "Initialize the repo data fetching"
 repo init -q -u $LINK -b $BRANCH --depth 1 || repo init -q -u $LINK --depth 1
@@ -51,50 +51,45 @@ cd $DIR
 echo -en "The total size of the checked-out files is ---  "
 du -sh $RecName
 DDF=$(du -sh -BM $RecName | awk '{print $1}' | sed 's/M//')
-cd $RecName
+echo -en "Value of DDF is  --- " && echo $DDF
 
 # Get the Version
 export version=$(cat bootable/recovery/variables.h | grep "define TW_MAIN_VERSION_STR" | cut -d '"' -f2)
 echo -en "The Recovery Version is -- " && echo $version
 
+cd $RecName
+
 # Compress non-repo folder in one piece
 echo -e "Compressing files --- "
 echo -e "Please be patient, this will take time"
 
+mkdir -p ~/project/files/
+
 export XZ_OPT=-9e
 
 if [ $DDF -gt 8192 ]; then
-  mkdir parts
+  mkdir $DIR/parts
   echo -e "Compressing and Making 2GB parts Because of Huge Data Amount \nBe Patient..."
-  time tar -I pxz -cf - $RecName/ | split -b 2048M - parts/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
-  SHALLOW="parts/$RecName-$BRANCH-norepo*"
+  time tar -I pxz -cf - * | split -b 2048M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
-  du -sh parts
+  du -sh ~/project/files/
 else
-  time tar -I pxz -cf $RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+  time tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
-  du -sh $RecName-$BRANCH-norepo*.tar.xz
+  du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
 
 echo -e "Compression Done"
 
-mkdir -p ~/project/files/
-
-if [ $DDF -gt 8192 ]; then
-  mv $RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz ~/project/files/
-else
-  mv parts/$RecName-$BRANCH-norepo-* ~/project/files/
-fi
-
 cd ~/project/files
 
 # Make a Compressed file list for future reference
-tar -tJvf *.tar.xz.* | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).filelist.txt
-echo -en "Size of filelist text is -- " && du -sh *.filelist.txt
-tar -I pxz -cf $RecName-$BRANCH-norepo.fullfilelist.tar.xz *.txt
-echo -en "Size of Compressed filelist is -- " && du -sh *.fullfilelist.tar.xz
-rm *.filelist.txt
+tar -tJvf *.tar.xz.* | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+echo -en "Size of filelist text is -- " && du -sh *.file.log
+tar -I pxz -cf $RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
+echo -en "Size of Compressed filelist is -- " && du -sh *.filelist.tar.xz
+rm *.file.log
 
 # Take md5
 md5sum $RecName-$BRANCH-norepo-*.tar.xz.* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
