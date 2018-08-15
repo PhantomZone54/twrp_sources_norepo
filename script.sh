@@ -69,8 +69,8 @@ export XZ_OPT=-9e
 
 if [ $DDF -gt 8192 ]; then
   mkdir $DIR/parts
-  echo -e "Compressing and Making 2GB parts Because of Huge Data Amount \nBe Patient..."
-  time tar -I pxz -cf - * | split -b 2048M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  echo -e "Compressing and Making 1.75GB parts Because of Huge Data Amount \nBe Patient..."
+  time tar -I pxz -cf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
@@ -85,14 +85,21 @@ echo -e "Compression Done"
 cd ~/project/files
 
 # Make a Compressed file list for future reference
-tar -tJvf *.tar.xz.* | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+if [ $DDF -gt 8192 ]; then
+  tar -tJvf *.tar.xz.aa | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+  tar -tJvf *.tar.xz.ab | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+else
+  tar -tJvf *.tar.xz | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+fi
+
 echo -en "Size of filelist text is -- " && du -sh *.file.log
 tar -I pxz -cf $RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
 echo -en "Size of Compressed filelist is -- " && du -sh *.filelist.tar.xz
 rm *.file.log
 
 # Take md5
-md5sum $RecName-$BRANCH-norepo-*.tar.xz.* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
+md5sum $RecName-$BRANCH-norepo* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
+cat $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
@@ -107,6 +114,8 @@ for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHo
 echo -e " Done uploading to AFH"
 
 cd ~/project/
-ghr -u $GitHubName -t $GITHUB_TOKEN -b "Releasing Latest TWRP Sources using OmniROM's Minimal-Manifest" v$version-$(date +%Y%m%d) files
+ghr -u $GitHubName -t $GITHUB_TOKEN -b "Releasing Latest TWRP Sources using OmniROM's Minimal-Manifest" v$version-$(date +%Y%m%d) files/
 
 echo -e "\nCongratulations! Job Done!"
+
+rm -rf files/

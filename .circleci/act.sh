@@ -1,7 +1,7 @@
 #!/bin/bash
 while true; do
   echo -en "The Time is --- "
-  date
+  date +%r
   sleep 300
 done
 EOF
