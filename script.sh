@@ -53,11 +53,11 @@ du -sh $RecName
 DDF=$(du -sh -BM $RecName | awk '{print $1}' | sed 's/M//')
 echo -en "Value of DDF is  --- " && echo $DDF
 
+cd $RecName
+
 # Get the Version
 export version=$(cat bootable/recovery/variables.h | grep "define TW_MAIN_VERSION_STR" | cut -d '"' -f2)
 echo -en "The Recovery Version is -- " && echo $version
-
-cd $RecName
 
 # Compress non-repo folder in one piece
 echo -e "Compressing files --- "
