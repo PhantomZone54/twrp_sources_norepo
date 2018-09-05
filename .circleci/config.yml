@@ -44,14 +44,23 @@ workflows:
   version: 2
   build:
     jobs:
-      - "primary"
-      - "secondary"
-      - "third"
-      - "fourth"
-
-general:
-  branches:
-    only:
-      - master
-    ignore:
-      - travis
+      - "primary":
+          filters:
+            branches:
+              only: master
+              ignore: travis
+      - "secondary":
+          filters:
+            branches:
+              only: master
+              ignore: travis
+      - "third":
+          filters:
+            branches:
+              only: master
+              ignore: travis
+      - "fourth":
+          filters:
+            branches:
+              only: master
+              ignore: travis
