@@ -48,3 +48,10 @@ workflows:
       - "secondary"
       - "third"
       - "fourth"
+
+general:
+  branches:
+    only:
+      - master
+    ignore:
+      - travis
