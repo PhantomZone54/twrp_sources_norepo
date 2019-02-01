@@ -20,8 +20,8 @@ FTPUser=$7
 FTPPass=$8
 
 echo -e "Making Update and Installing Apps"
-sudo apt-get update -y && sudo apt-get upgrade -y
-sudo apt-get install pxz wput -y
+sudo apt update -qy && sudo apt upgrade -qy
+sudo apt install pxz wput -y
 
 echo -e "ReEnable PATH and Set Repo & GHR"
 mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
@@ -62,10 +62,13 @@ echo -en "The Recovery Version is -- " && echo $version
 # Compress non-repo folder in one piece
 echo -e "Compressing files --- "
 echo -e "Please be patient, this will take time"
+# Take a break
+sleep 3s
 
 mkdir -p ~/project/files/
 
-export XZ_OPT=-9e
+# Compression quality
+export XZ_OPT=-6
 
 if [ $DDF -gt 8192 ]; then
   mkdir $DIR/parts
