@@ -84,19 +84,6 @@ echo -e "Compression Done"
 
 cd ~/project/files
 
-# Make a Compressed file list for future reference
-if [ $DDF -gt 8192 ]; then
-  tar -tJvf *.tar.xz.aa | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
-  tar -tJvf *.tar.xz.ab | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
-else
-  tar -tJvf *.tar.xz | awk '{print $6}' >> $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
-fi
-
-echo -en "Size of filelist text is -- " && du -sh *.file.log
-tar -I pxz -cf $RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
-echo -en "Size of Compressed filelist is -- " && du -sh *.filelist.tar.xz
-rm *.file.log
-
 # Take md5
 md5sum $RecName-$BRANCH-norepo* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 cat $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
@@ -104,6 +91,13 @@ cat $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
 du -sh ~/project/files/
+
+# Make a Compressed file list for future reference
+cd $RecName
+ls -AhxcRis . $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+echo -en "Size of filelist text is -- " && du -sh *.file.log
+tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
+rm *.file.log
 
 cd $DIR
 # Basic Cleanup
