@@ -1,7 +1,7 @@
 version: 2.0
 
 jobs:
-  "primary":
+  "primary": # twrp-8.1
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -11,7 +11,7 @@ jobs:
           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch1 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
 
-  "secondary":
+  "secondary": # twrp-7.1
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -21,7 +21,7 @@ jobs:
           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch2 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
 
-  "third":
+  "third": # twrp-6.0
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -31,7 +31,7 @@ jobs:
           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
 
-  "fourth":
+  "fourth": # twrp-5.1
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -40,7 +40,7 @@ jobs:
           name: Run fourth Parallel job
           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
-  "fifth":
+  "fifth": # twrp-9.0
     docker:
       - image: circleci/openjdk:8-jdk
     steps:
@@ -53,23 +53,8 @@ workflows:
   version: 2
   build:
     jobs:
-      - "primary":
-          filters:
-            branches:
-              only: master
-      - "secondary":
-          filters:
-            branches:
-              only: master
-      - "third":
-          filters:
-            branches:
-              only: master
-      - "fourth":
-          filters:
-            branches:
-              only: master
-      - "fifth":
-          filters:
-            branches:
-              only: master
+      - "primary"     # twrp-8.1
+      - "secondary"   # twrp-7.1
+      - "third"       # twrp-6.0
+      - "fourth"      # twrp-5.1
+      - "fifth"       # twrp-9.0
