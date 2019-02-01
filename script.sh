@@ -73,13 +73,13 @@ export XZ_OPT=-6
 if [ $DDF -gt 8192 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.75GB parts Because of Huge Data Amount \nHold your Horses..."
-  time tar -I 'pxz -9 -T0' cvf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  time tar -I 'pxz -9 -T0' -cvf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
   echo -e "Compressing and Making single archive as Total Data is less than 8GB \nBe Patient..."
-  time tar -I 'pxz -9 -T0' cvf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+  time tar -I 'pxz -9 -T0' -cvf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
@@ -100,7 +100,7 @@ du -sh ~/project/files/
 cd $RecName
 ls -AhxcRis . $RecName-$BRANCH-*.file.log || echo "filelist generation error"
 echo -en "Size of filelist text is -- " && du -sh *.file.log
-tar -I pxz cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
+tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
 rm *.file.log
 
 cd $DIR
