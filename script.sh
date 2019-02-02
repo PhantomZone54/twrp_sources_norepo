@@ -66,8 +66,6 @@ echo -e "Please be patient, this will take time"
 
 # Take a break
 sleep 3s
-echo -e "\nRam: \n" && free -mht
-echo -e "\nCPU info: \n" && cat /proc/cpuinfo
 
 mkdir -p ~/project/files/
 
@@ -76,14 +74,14 @@ mkdir -p ~/project/files/
 
 if [ $DDF -gt 6144 ]; then
   echo -e "Compressing and Making 1280MB parts Because of Huge Data Amount \nHold your Horses..."
-  time tar -cf - * | pxz -z -5 -T0 - | split -b 1280M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  time tar -cf - * | pxz -T0 - | split -b 1280M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   #time tar -I 'pxz -9 -T0' -cf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
   echo -e "Compressing and Making single archive as Total Data is less than 8GB \nBe Patient..."
-  time tar -cf - * | pxz -z -5 -T0 - > ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz
+  time tar -cf - * | pxz -T0 - > ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz
   #time tar -I 'pxz -9 -T0' -cf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
