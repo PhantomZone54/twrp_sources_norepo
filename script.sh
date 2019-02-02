@@ -45,6 +45,7 @@ time repo sync -c -f -q --force-sync --no-clone-bundle --no-tags -j32
 echo -e "\nSHALLOW Source Syncing done\n"
 
 rm -rf .repo/
+chown -R circleci:circleci *
 
 # Show and Record Total Sizes of the checked-out non-repo files
 cd $DIR
@@ -90,15 +91,17 @@ echo -e "Compression Done"
 cd ~/project/files
 
 # Take md5
-md5sum $RecName-$BRANCH-norepo* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
+md5sum * > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 cat $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
 du -sh ~/project/files/
 
+ls -la ~/project/
+
 # Make a Compressed file list for future reference
-cd $RecName
+cd ~/project/$RecName
 ls -AhxcRis . > $RecName-$BRANCH-*.file.log || echo "filelist generation error"
 echo -en "Size of filelist text is -- " && du -sh *.file.log
 tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
