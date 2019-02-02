@@ -21,7 +21,7 @@ FTPPass=$8
 
 echo -e "Making Update and Installing Apps"
 sudo apt update -qy && sudo apt upgrade -qy
-sudo apt install pxz wput -y
+sudo apt install xz-utils pxz wput -y
 
 echo -e "ReEnable PATH and Set Repo & GHR"
 mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
@@ -68,18 +68,19 @@ sleep 3s
 mkdir -p ~/project/files/
 
 # Compression quality
-export XZ_OPT=-6
+export XZ_OPT=-9e
 
 if [ $DDF -gt 8192 ]; then
-  mkdir $DIR/parts
   echo -e "Compressing and Making 1.75GB parts Because of Huge Data Amount \nHold your Horses..."
-  time tar -I 'pxz -9 -T0' -cvf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  time tar -cf - * | pxz -z -9e -T0 - | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  #time tar -I 'pxz -9 -T0' -cf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
   echo -e "Compressing and Making single archive as Total Data is less than 8GB \nBe Patient..."
-  time tar -I 'pxz -9 -T0' -cvf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+  time tar -cf - * | pxz -z -9e -T0 - > ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz
+  #time tar -I 'pxz -9 -T0' -cf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
@@ -98,7 +99,7 @@ du -sh ~/project/files/
 
 # Make a Compressed file list for future reference
 cd $RecName
-ls -AhxcRis . $RecName-$BRANCH-*.file.log || echo "filelist generation error"
+ls -AhxcRis . > $RecName-$BRANCH-*.file.log || echo "filelist generation error"
 echo -en "Size of filelist text is -- " && du -sh *.file.log
 tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
 rm *.file.log
