@@ -10,21 +10,12 @@
 # Definitions
 DIR=$(pwd)
 echo -en "Current directory is -- " && echo $DIR
-RecName=$1
-LINK=$2
+echo -en "Recovery Name is -- " && echo $RecName
 
-#BRANCH=$3
 branches="twrp-7.1 twrp-8.1 twrp-9.0"
 
-GitHubMail=$3
-GitHubName=$4
-FTPHost=$5
-FTPUser=$6
-FTPPass=$7
-
 echo -e "ReEnable PATH and Set Repo & GHR"
-mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
-sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://github.com/akhilnarang/repo/raw/master/repo
+sudo curl --silent --create-dirs -L -o /usr/local/bin/repo -O -L https://github.com/akhilnarang/repo/raw/master/repo
 
 echo -e "Setup ghr"
 wget -q "https://github.com/tcnksm/ghr/releases/download/v0.12.0/ghr_v0.12.0_linux_amd64.tar.gz"
