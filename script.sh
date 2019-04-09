@@ -44,9 +44,16 @@ echo -e "Sync it up"
 time repo sync -c -f -q --force-sync --no-clone-bundle --no-tags -j32
 echo -e "\nSHALLOW Source Syncing done\n"
 
+echo -e "Own all the files to circleci user"
+sudo chown -R circleci:circleci *
+
+echo -e "Remove the .repo chunks"
 rm -rf .repo/
 
-# Show and Record Total Sizes of the checked-out non-repo files
+echo -e "Remove all the .git folders from withing every Repositories"
+find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
+
+echo -e "Show and Record Total Sizes of the checked-out non-repo files"
 cd $DIR
 echo -en "The total size of the checked-out files is ---  "
 du -sh $RecName
@@ -73,12 +80,12 @@ export XZ_OPT=-6
 if [ $DDF -gt 8192 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.75GB parts Because of Huge Data Amount \nBe Patient..."
-  time tar -I pxz -cf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  time tar -I pxz -cvf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
-  time tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+  time tar -I pxz -cvf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
@@ -87,25 +94,29 @@ echo -e "Compression Done"
 
 cd ~/project/files
 
-# Take md5
-md5sum $RecName-$BRANCH-norepo* > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
+echo -e "Taking md5 Hash"
+md5sum * > $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 cat $RecName-$BRANCH-norepo-$(date +%Y%m%d).md5sum
 
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
 du -sh ~/project/files/
 
+echo -e "Show all major contents of the project root folder"
+ls -la ~/project/
+
 # Make a Compressed file list for future reference
-cd $RecName
-ls -AhxcRis . $RecName-$BRANCH-norepo-$(date +%Y%m%d).file.log
+cd ~/project/$RecName
+ls -AhxcRis . >> $RecName-$BRANCH-*.file.log || echo "filelist generation error"
 echo -en "Size of filelist text is -- " && du -sh *.file.log
 tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
 rm *.file.log
 
 cd $DIR
-# Basic Cleanup
+echo -e "Basic Cleanup"
 rm -rf $RecName
 
+echo -e "Preparing for Upload"
 cd ~/project/files/
 for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/ ; done
 echo -e " Done uploading to AFH"
