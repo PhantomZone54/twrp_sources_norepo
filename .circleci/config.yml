@@ -10,7 +10,6 @@ jobs:
           name: Run first Parallel job
           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch1 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
-
   "secondary": # twrp-7.1
     docker:
       - image: circleci/openjdk:8-jdk
@@ -20,26 +19,23 @@ jobs:
           name: Run second Parallel job
           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch2 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
+  "third": # twrp-6.0
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Run third Parallel job
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
-#   "third": # twrp-6.0
-#     docker:
-#       - image: circleci/openjdk:8-jdk
-#     steps:
-#       - checkout
-#       - run:
-#           name: Run third Parallel job
-#           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
-
-#   twrp-5.1 and twrp-6.0 manifest is unmaintained for a long time, so no update is required
-
-#   "fourth": # twrp-5.1
-#     docker:
-#       - image: circleci/openjdk:8-jdk
-#     steps:
-#       - checkout
-#       - run:
-#           name: Run fourth Parallel job
-#           command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
+  "fourth": # twrp-5.1
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - run:
+          name: Run fourth Parallel job
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
 
   "fifth": # twrp-9.0
     docker:
@@ -56,6 +52,6 @@ workflows:
     jobs:
       - "primary"     # twrp-8.1
       - "secondary"   # twrp-7.1
-#       - "third"       # twrp-6.0
-#       - "fourth"      # twrp-5.1
+      - "third"       # twrp-6.0
+      - "fourth"      # twrp-5.1
       - "fifth"       # twrp-9.0
