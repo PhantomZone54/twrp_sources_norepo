@@ -20,8 +20,8 @@ FTPUser=$7
 FTPPass=$8
 
 echo -e "Making Update and Installing Apps"
-sudo apt-get update -qy && sudo apt-get upgrade -qy
-sudo apt-get install pxz wput -qy
+sudo apt-get update -qqy && sudo apt-get upgrade -qqy
+sudo apt-get install pxz wput -qqy
 
 echo -e "ReEnable PATH and Set Repo & GHR"
 mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
@@ -33,6 +33,9 @@ PATH=~/bin:/usr/local/bin:$PATH && echo $PATH
 echo -e "Github Authorization"
 git config --global user.email $GitHubMail && git config --global user.name $GitHubName
 git config --global color.ui true
+
+echo -e "Initial Disc Usage ..."
+df -hlT
 
 echo -e "Main Function Starts HERE"
 cd $DIR; mkdir $RecName; cd $RecName
@@ -50,10 +53,8 @@ sudo chown -R circleci:circleci * .
 echo -e "Remove the .repo chunks"
 rm -rf .repo/
 
-echo -en "Size before removing .git folders -- " && du -sh .
 echo -e "Remove all the .git folders from withing every Repositories"
 find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
-echo -en "Size after removing .git folders -- " && du -sh .
 
 echo -e "Show and Record Total Sizes of the checked-out non-repo files"
 cd $DIR
@@ -61,6 +62,9 @@ echo -en "The total size of the checked-out files is ---  "
 du -sh $RecName
 DDF=$(du -sh -BM $RecName | awk '{print $1}' | sed 's/M//')
 echo -en "Value of DDF is  --- " && echo $DDF
+
+echo -e "Disc Usage After Repo Sync and Clear Stuffs ..."
+df -hlT
 
 cd $RecName
 
@@ -82,17 +86,20 @@ export XZ_OPT=-6
 if [ $DDF -gt 8192 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.75GB parts Because of Huge Data Amount \nBe Patient..."
-  time tar -I pxz -cvf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  time tar -I pxz -cf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
-  time tar -I pxz -cvf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
+  time tar -I pxz -cf ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
 
 echo -e "Compression Done"
+
+echo -e "Final Disc Usage After Compression ..."
+df -hlT
 
 cd ~/project/files
 
