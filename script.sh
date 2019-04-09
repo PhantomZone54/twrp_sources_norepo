@@ -1,4 +1,4 @@
-#!/bin/bash
+MinimalOmniRecovery#!/bin/bash
 
 # Authors - Neil "regalstreak" Agarwal, Harsh "MSF Jarvis" Shandilya, Tarang "DigiGoon" Kagathara
 # 2017
@@ -83,10 +83,10 @@ mkdir -p ~/project/files/
 # Compression quality
 export XZ_OPT=-6
 
-if [ $DDF -gt 8192 ]; then
+if [ $DDF -gt 5120 ]; then
   mkdir $DIR/parts
-  echo -e "Compressing and Making 1.75GB parts Because of Huge Data Amount \nBe Patient..."
-  time tar -I pxz -cf - * | split -b 1792M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
+  echo -e "Compressing and Making 1GB parts Because of Huge Data Amount \nBe Patient..."
+  time tar -I pxz -cf - * | split -b 1024M - ~/project/files/$RecName-$BRANCH-norepo-$(date +%Y%m%d).tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
