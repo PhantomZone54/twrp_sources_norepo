@@ -20,12 +20,12 @@ FTPUser=$7
 FTPPass=$8
 
 echo -e "Making Update and Installing Apps"
-sudo apt update -qy && sudo apt upgrade -qy
-sudo apt install pxz wput -y
+sudo apt-get update -qy && sudo apt-get upgrade -qy
+sudo apt-get install pxz wput -qy
 
 echo -e "ReEnable PATH and Set Repo & GHR"
 mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
-sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://github.com/akhilnarang/repo/raw/master/repo
+sudo curl --silent --create-dirs -L -o /usr/local/bin/repo -O -L https://github.com/akhilnarang/repo/raw/master/repo
 sudo cp .circleci/ghr ~/bin/ghr
 sudo chmod a+x /usr/local/bin/repo
 PATH=~/bin:/usr/local/bin:$PATH && echo $PATH
@@ -41,17 +41,19 @@ echo -e "Initialize the repo data fetching"
 repo init -q -u $LINK -b $BRANCH --depth 1 || repo init -q -u $LINK --depth 1
 
 echo -e "Sync it up"
-time repo sync -c -f -q --force-sync --no-clone-bundle --no-tags -j32
+sudo repo sync -c -f -q --force-sync --no-clone-bundle --no-tags -j32
 echo -e "\nSHALLOW Source Syncing done\n"
 
 echo -e "Own all the files to circleci user"
-sudo chown -R circleci:circleci *
+sudo chown -R circleci:circleci * .
 
 echo -e "Remove the .repo chunks"
 rm -rf .repo/
 
+echo -en "Size before removing .git folders -- " && du -sh .
 echo -e "Remove all the .git folders from withing every Repositories"
 find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
+echo -en "Size after removing .git folders -- " && du -sh .
 
 echo -e "Show and Record Total Sizes of the checked-out non-repo files"
 cd $DIR
