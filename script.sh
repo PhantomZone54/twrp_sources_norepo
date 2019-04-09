@@ -22,10 +22,6 @@ FTPHost=$5
 FTPUser=$6
 FTPPass=$7
 
-echo -e "Making Update and Installing Apps"
-sudo apt update -qy && sudo apt upgrade -qy
-sudo apt install pxz wput -y
-
 echo -e "ReEnable PATH and Set Repo & GHR"
 mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
 sudo curl --create-dirs -L -o /usr/local/bin/repo -O -L https://github.com/akhilnarang/repo/raw/master/repo
