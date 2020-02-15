@@ -1,4 +1,4 @@
-MinimalOmniRecovery#!/bin/bash
+#!/bin/bash
 
 # Authors - Neil "regalstreak" Agarwal, Harsh "MSF Jarvis" Shandilya, Tarang "DigiGoon" Kagathara
 # 2017
