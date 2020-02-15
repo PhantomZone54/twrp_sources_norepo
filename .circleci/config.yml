@@ -3,53 +3,48 @@ version: 2.0
 jobs:
   "primary": # twrp-8.1
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: fr3akyphantom/skadoosh:latest
     steps:
       - checkout
       - run:
           name: Run first Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch1 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
-          no_output_timeout: 30m
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch1
 
   "secondary": # twrp-7.1
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: fr3akyphantom/skadoosh:latest
     steps:
       - checkout
       - run:
           name: Run second Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch2 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
-          no_output_timeout: 30m
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch2
 
   "third": # twrp-6.0
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: fr3akyphantom/skadoosh:latest
     steps:
       - checkout
       - run:
           name: Run third Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
-          no_output_timeout: 30m
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3
 
   "fourth": # twrp-5.1
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: fr3akyphantom/skadoosh:latest
     steps:
       - checkout
       - run:
           name: Run fourth Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
-          no_output_timeout: 30m
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4
 
   "fifth": # twrp-9.0
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: fr3akyphantom/skadoosh:latest
     steps:
       - checkout
       - run:
           name: Run fourth Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch5 $GitHubMail $GitHubName $FTPHost $FTPUser $FTPPass
-          no_output_timeout: 30m
+          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch5
 
 workflows:
   version: 2
