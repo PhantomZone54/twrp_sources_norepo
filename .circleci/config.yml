@@ -8,7 +8,7 @@ jobs:
       - checkout
       - run:
           name: Run first Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch1
+          command: echo "Running..."; chmod a+x .circleci/act.sh; .circleci/act.sh & ./script.sh $RecName $Link $Branch1
 
   "secondary": # twrp-7.1
     docker:
@@ -17,7 +17,7 @@ jobs:
       - checkout
       - run:
           name: Run second Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch2
+          command: echo "Running..."; chmod a+x .circleci/act.sh; .circleci/act.sh & ./script.sh $RecName $Link $Branch2
 
   "third": # twrp-6.0
     docker:
@@ -26,7 +26,7 @@ jobs:
       - checkout
       - run:
           name: Run third Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch3
+          command: echo "Running..."; chmod a+x .circleci/act.sh; .circleci/act.sh & ./script.sh $RecName $Link $Branch3
 
   "fourth": # twrp-5.1
     docker:
@@ -35,7 +35,7 @@ jobs:
       - checkout
       - run:
           name: Run fourth Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch4
+          command: echo "Running..."; chmod a+x .circleci/act.sh; .circleci/act.sh & ./script.sh $RecName $Link $Branch4
 
   "fifth": # twrp-9.0
     docker:
@@ -44,7 +44,7 @@ jobs:
       - checkout
       - run:
           name: Run fourth Parallel job
-          command: echo "Running..."; .circleci/act.sh & ./script.sh $RecName $Link $Branch5
+          command: echo "Running..."; chmod a+x .circleci/act.sh; .circleci/act.sh & ./script.sh $RecName $Link $Branch5
 
 workflows:
   version: 2
