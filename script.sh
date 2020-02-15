@@ -19,19 +19,9 @@ FTPHost=$6
 FTPUser=$7
 FTPPass=$8
 
-echo -e "Making Update and Installing Apps"
-sudo apt-get update -qqy && sudo apt-get upgrade -qqy
-sudo apt-get install pxz wput -qqy
-
-echo -e "ReEnable PATH and Set Repo & GHR"
-mkdir ~/bin ; echo ~/bin || echo "bin folder creation error"
-sudo curl --silent --create-dirs -L -o /usr/local/bin/repo -O -L https://github.com/akhilnarang/repo/raw/master/repo
-sudo cp .circleci/ghr ~/bin/ghr
-sudo chmod a+x /usr/local/bin/repo
-PATH=~/bin:/usr/local/bin:$PATH && echo $PATH
-
 echo -e "Github Authorization"
-git config --global user.email $GitHubMail && git config --global user.name $GitHubName
+git config --global user.email $GitHubMail
+git config --global user.name $GitHubName
 git config --global color.ui true
 
 echo -e "Initial Disc Usage ..."
@@ -44,17 +34,14 @@ echo -e "Initialize the repo data fetching"
 repo init -q -u $LINK -b $BRANCH --depth 1 || repo init -q -u $LINK --depth 1
 
 echo -e "Sync it up"
-sudo repo sync -c -f -q --force-sync --no-clone-bundle --no-tags -j32
+repo sync -c -q --force-sync --no-clone-bundle --no-tags -j32
 echo -e "\nSHALLOW Source Syncing done\n"
-
-echo -e "Own all the files to circleci user"
-sudo chown -R circleci:circleci * .
-
-echo -e "Remove the .repo chunks"
-rm -rf .repo/
 
 echo -e "Remove all the .git folders from withing every Repositories"
 find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
+
+echo -e "Remove the .repo chunks"
+rm -rf .repo/
 
 echo -e "Show and Record Total Sizes of the checked-out non-repo files"
 cd $DIR
