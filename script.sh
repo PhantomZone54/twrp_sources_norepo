@@ -13,11 +13,6 @@ echo -en "Current directory is -- " && echo $DIR
 RecName=$1
 LINK=$2
 BRANCH=$3
-GitHubMail=$4
-GitHubName=$5
-FTPHost=$6
-FTPUser=$7
-FTPPass=$8
 
 echo -e "Github Authorization"
 git config --global user.email $GitHubMail
