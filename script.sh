@@ -81,10 +81,10 @@ datetime=$(date +%Y%m%d)
 # Compression quality
 export XZ_OPT=-8
 
-if [ $DDF -gt 5120 ]; then
+if [ $DDF -gt 6520 ]; then
   mkdir $DIR/parts
-  echo -e "Compressing and Making 1GB parts Because of Huge Data Amount \nBe Patient..."
-  tar -cJf - * | split -b 1024M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
+  echo -e "Compressing and Making 1.3GB parts Because of Huge Data Amount \nBe Patient..."
+  tar -cJf - * | split -b 1280M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
@@ -107,10 +107,7 @@ cat $RecName-$BRANCH-norepo-$datetime.md5sum
 
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
-du -sh ~/project/files/
-
-echo -e "Show all major contents of the project root folder"
-ls -la ~/project/
+du -sh ~/project/files/*
 
 # Make a Compressed file list for future reference
 cd ~/project/$RecName
@@ -129,6 +126,7 @@ for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHo
 echo -e " Done uploading to AFH"
 
 cd ~/project/
+rm -f files/core* || true
 ghr -u $GitHubName -t $GITHUB_TOKEN -b "Releasing Latest TWRP Sources using OmniROM's Minimal-Manifest" v$version-$datetime files/
 
 echo -e "\nCongratulations! Job Done!"
