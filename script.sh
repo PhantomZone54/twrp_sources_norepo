@@ -24,6 +24,12 @@ git config --global user.email $GitHubMail
 git config --global user.name $GitHubName
 git config --global color.ui true
 
+git clone -q "https://$GITHUB_TOKEN@github.com/rokibhasansagar/google-git-cookies.git" &> /dev/null
+if [ -e google-git-cookies ]; then
+  bash google-git-cookies/setup_cookies.sh
+  rm -rf google-git-cookies
+fi
+
 echo -e "Initial Disc Usage ..."
 df -hlT
 
@@ -33,8 +39,17 @@ cd $DIR; mkdir $RecName; cd $RecName
 echo -e "Initialize the repo data fetching"
 repo init -q -u $LINK -b $BRANCH --depth 1 || repo init -q -u $LINK --depth 1
 
+echo -e "Removing Unimportant Darwin-specific Files from syncing"
+cd .repo/manifests
+sed -i '/darwin/d' default.xml
+( find . -type f -name '*.xml' | xargs sed -i '/darwin/d' ) || true
+git commit -a -m "Magic" || true
+cd ../
+sed -i '/darwin/d' manifest.xml
+cd ../
+
 echo -e "Sync it up"
-repo sync -c -q --force-sync --no-clone-bundle --no-tags -j32
+repo sync -c -q --force-sync --no-clone-bundle --optimized-fetch --prune --no-tags -j32
 echo -e "\nSHALLOW Source Syncing done\n"
 
 echo -e "Remove all the .git folders from withing every Repositories"
