@@ -14,8 +14,8 @@ LINK=$2
 BRANCH=$3
 
 # Some Machine Info
-lscpu --all --extended
-cat /proc/cpuinfo | grep processor | wc -l
+lscpu
+cat /proc/cpuinfo
 df -hlT
 
 echo -e "Github Authorization"
@@ -80,7 +80,7 @@ mkdir -p ~/project/files/
 datetime=$(date +%Y%m%d)
 
 # Compression quality
-export XZ_OPT="-9 --threads=16"
+export XZ_OPT="-9 --threads=8"
 
 if [ $DDF -gt 6912 ]; then
   mkdir $DIR/parts
