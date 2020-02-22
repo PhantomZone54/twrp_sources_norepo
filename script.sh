@@ -14,7 +14,7 @@ LINK=$2
 BRANCH=$3
 
 # Some Machine Info
-lscpu --all
+lscpu --all --extended
 cat /proc/cpuinfo | grep processor | wc -l
 df -hlT
 
