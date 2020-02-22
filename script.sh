@@ -9,10 +9,14 @@
 
 # Definitions
 DIR=$(pwd)
-echo -en "Current directory is -- " && echo $DIR
 RecName=$1
 LINK=$2
 BRANCH=$3
+
+# Some Machine Info
+lscpu --all
+cat /proc/cpuinfo | grep processor | wc -l
+df -hlT
 
 echo -e "Github Authorization"
 git config --global user.email $GitHubMail
@@ -24,9 +28,6 @@ if [ -e google-git-cookies ]; then
   bash google-git-cookies/setup_cookies.sh
   rm -rf google-git-cookies
 fi
-
-echo -e "Initial Disc Usage ..."
-df -hlT
 
 echo -e "Main Function Starts HERE"
 cd $DIR; mkdir $RecName; cd $RecName
@@ -79,12 +80,12 @@ mkdir -p ~/project/files/
 datetime=$(date +%Y%m%d)
 
 # Compression quality
-export XZ_OPT=-8
+export XZ_OPT="-9 --threads=16"
 
-if [ $DDF -gt 6520 ]; then
+if [ $DDF -gt 6912 ]; then
   mkdir $DIR/parts
-  echo -e "Compressing and Making 1.3GB parts Because of Huge Data Amount \nBe Patient..."
-  tar -cJf - * | split -b 1280M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
+  echo -e "Compressing and Making 1.2GB parts Because of Huge Data Amount \nBe Patient..."
+  tar -cJf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
