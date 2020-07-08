@@ -44,7 +44,7 @@ sed -i '/darwin/d' manifest.xml
 cd ../
 
 echo -e "Sync it up"
-repo sync -c -q --force-sync --no-clone-bundle --optimized-fetch --prune --no-tags -j32
+repo sync -c -q --force-sync --no-clone-bundle --optimized-fetch --prune --no-tags -j$(nproc --all)
 echo -e "\nSHALLOW Source Syncing done\n"
 
 echo -e "Remove all the .git folders from withing every Repositories"
@@ -122,7 +122,11 @@ rm -rf $RecName
 
 echo -e "Preparing for Upload"
 cd ~/project/files/
-for file in $RecName-$BRANCH*; do wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/ ; done
+for file in $RecName-$BRANCH*; do
+  echo -e "\nUploading $file ...\n"
+  wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/
+  sleep 2s
+done
 echo -e " Done uploading to AFH"
 
 cd ~/project/
