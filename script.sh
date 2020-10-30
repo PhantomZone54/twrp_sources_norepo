@@ -13,10 +13,6 @@ RecName=$1
 LINK=$2
 BRANCH=$3
 
-# Some Machine Info
-lscpu
-df -hlT
-
 echo -e "Github Authorization"
 git config --global user.email $GitHubMail
 git config --global user.name $GitHubName
@@ -88,11 +84,13 @@ if [ $DDF -gt 6912 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.2GB parts Because of Huge Data Amount \nBe Patient..."
   tar --xz -cf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
+  [ $? != 0 ] && { echo "Compression Error" && exit 1; }
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
   tar --xz -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz *
+  [ $? != 0 ] && { echo "Compression Error" && exit 1; }
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
