@@ -40,27 +40,23 @@ sed -i '/darwin/d' manifest.xml
 cd ../
 
 echo -e "Sync it up"
-repo sync -c -q --force-sync --no-clone-bundle --optimized-fetch --prune --no-tags -j$(nproc --all)
+time repo sync -c -q --force-sync --no-clone-bundle --optimized-fetch --prune --no-tags -j$(nproc --all)
 echo -e "\nSHALLOW Source Syncing done\n"
 
-# Always fetch bootable from TeamWin's android-9.0 branch
-rm -rf bootable/recovery && git clone --depth 1 https://github.com/TeamWin/android_bootable_recovery -b android-9.0 bootable/recovery
+echo -e "\nThe total size of the .repo folder is --- " && du -sh .repo
 
-echo -e "Remove all the .git folders from withing every Repositories"
-find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
+# Keep the whole .repo/manifests folder
+mkdir -p repomanifests && cp -a .repo/manifests repomanifests/
+echo "Cleaning up the .repo, no use of it now"
+rm -rf .repo
+mkdir -p .repo && mv repomanifests/manifests .repo/ && ln -s .repo/manifests/default.xml .repo/manifest.xml && rm -rf repomanifests
 
-echo -e "Remove the .repo chunks"
-rm -rf .repo/
+#echo -e "Remove all the .git folders from withing every Repositories"
+#find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
 
-echo -e "Show and Record Total Sizes of the checked-out non-repo files"
 cd $DIR
-echo -en "The total size of the checked-out files is ---  "
-du -sh $RecName
 DDF=$(du -sh -BM $RecName | awk '{print $1}' | sed 's/M//')
-echo -en "Value of DDF is  --- " && echo $DDF
-
-echo -e "Disc Usage After Repo Sync and Clear Stuffs ..."
-df -hlT
+echo -en "The total size of the checked-out files is --- " && echo "$DDF MB"
 
 cd $RecName
 
@@ -77,34 +73,26 @@ sleep 3s
 mkdir -p ~/project/files/
 datetime=$(date +%Y%m%d)
 
-# Compression quality
-export XZ_OPT="-9"
-
 if [ $DDF -gt 6912 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.2GB parts Because of Huge Data Amount \nBe Patient..."
-  tar --xz -cf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
-  [ $? != 0 ] && { echo "Compression Error" && exit 1; }
+  tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst. || exit 1
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
-  du -sh ~/project/files/
+  du -sh ~/project/files/$RecName-$BRANCH-norepo*.tzst*
 else
-  tar --xz -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz *
-  [ $? != 0 ] && { echo "Compression Error" && exit 1; }
+  tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst * || exit 1
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
-  du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
+  du -sh ~/project/files/$RecName-$BRANCH-norepo*.tzst
 fi
 
 echo -e "Compression Done"
 
-echo -e "Final Disc Usage After Compression ..."
-df -hlT
-
 cd ~/project/files
 
 echo -e "Taking md5 Hash"
-md5sum * > $RecName-$BRANCH-norepo-$datetime.md5sum
-cat $RecName-$BRANCH-norepo-$datetime.md5sum
+md5sum * > $RecName-$BRANCH-norepo-$datetime.tzst.md5sum
+cat $RecName-$BRANCH-norepo-$datetime.tzst.md5sum
 
 # Show Total Sizes of the compressed files
 echo -en "Final Compressed size of the checked-out files is ---  "
@@ -114,7 +102,7 @@ du -sh ~/project/files/*
 cd ~/project/$RecName
 ls -AhxcRis . >> $RecName-$BRANCH-*.file.log || echo "filelist generation error"
 echo -en "Size of filelist text is -- " && du -sh *.file.log
-tar --xz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
+tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tzst *.file.log
 rm *.file.log
 
 cd $DIR
@@ -137,3 +125,4 @@ ghr -u $GitHubName -t $GITHUB_TOKEN -b "Releasing Latest TWRP Sources using Omni
 echo -e "\nCongratulations! Job Done!"
 
 rm -rf files/
+

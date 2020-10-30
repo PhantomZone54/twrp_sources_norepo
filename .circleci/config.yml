@@ -4,31 +4,61 @@ executors:
   alpine:
     docker:
       - image: fr3akyphantom/skadoosh:latest
-
-jobs:
-  build:
-    parameters:
-      platform:
-        type: string
-    executor: alpine
+        auth:
+          username: "$DOCKER_USERNAME"
+          password: "$DOCKERHUB_TOKEN"
     environment:
       RecName: "MinimalOmniRecovery"
       Link: "https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git"
-      BRANCH: "<< parameters.platform >>"
-    steps:
-      - checkout
-      - run:
-          name: "Compression Job for Minimal TWRP with << parameters.platform >> branch"
-          command: |
-            chmod a+x .circleci/keepalive.sh
-            .circleci/keepalive.sh & ./script.sh ${RecName} ${Link} ${BRANCH}
-            kill -s SIGTERM $(cat /tmp/keepalive.pid) || true
+
+default: &default
+  environment:
+    BRANCH: "<< parameters.platform >>"
+  parameters:
+    platform:
+      type: string
+      default: ""
+  steps:
+    - checkout
+    - run:
+        name: "Compression Job for Minimal TWRP with << parameters.platform >> branch"
+        command: |
+          chmod a+x .circleci/keepalive.sh
+          .circleci/keepalive.sh & ./script.sh ${RecName} ${Link} ${BRANCH}
+          kill -s SIGTERM $(cat /tmp/keepalive.pid) || true
+
+jobs:
+  build_a:
+    executor: alpine
+    <<: *default
+  build_b:
+    executor: alpine
+    <<: *default
+  build_c:
+    executor: alpine
+    <<: *default
 
 workflows:
   version: 2
   compress-norepo:
     jobs:
-      - build:
+      - build_a:
+          context: org-global
           matrix:
             parameters:
-              platform: ["twrp-5.1", "twrp-6.0", "twrp-7.1", "twrp-8.1", "twrp-9.0"]
+              platform: ["twrp-5.1", "twrp-6.0"]
+      - build_b:
+          requires:
+            - build_a
+          context: org-global
+          matrix:
+            parameters:
+              platform: ["twrp-7.1", "twrp-8.1"]
+      - build_c:
+          requires:
+            - build_b
+          context: org-global
+          matrix:
+            parameters:
+              platform: ["twrp-9.0"]
+
