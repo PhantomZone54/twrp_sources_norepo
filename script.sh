@@ -47,6 +47,9 @@ echo -e "Sync it up"
 repo sync -c -q --force-sync --no-clone-bundle --optimized-fetch --prune --no-tags -j$(nproc --all)
 echo -e "\nSHALLOW Source Syncing done\n"
 
+# Always fetch bootable from TeamWin's android-9.0 branch
+rm -rf bootable/recovery && git clone --depth 1 https://github.com/TeamWin/android_bootable_recovery -b android-9.0 bootable/recovery
+
 echo -e "Remove all the .git folders from withing every Repositories"
 find . \( -name ".git" -o -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) -exec rm -rf -- {} +
 
@@ -84,12 +87,12 @@ export XZ_OPT="-9"
 if [ $DDF -gt 6912 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.2GB parts Because of Huge Data Amount \nBe Patient..."
-  tar -cJf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
+  tar --xz -cf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz.
   # Show Total Sizes of the compressed .repo
   echo -en "Final Compressed size of the consolidated checked-out files is ---  "
   du -sh ~/project/files/
 else
-  tar -cJf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz *
+  tar --xz -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tar.xz *
   echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
   du -sh ~/project/files/$RecName-$BRANCH-norepo*.tar.xz
 fi
@@ -113,7 +116,7 @@ du -sh ~/project/files/*
 cd ~/project/$RecName
 ls -AhxcRis . >> $RecName-$BRANCH-*.file.log || echo "filelist generation error"
 echo -en "Size of filelist text is -- " && du -sh *.file.log
-tar -cJf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
+tar --xz -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tar.xz *.file.log
 rm *.file.log
 
 cd $DIR
