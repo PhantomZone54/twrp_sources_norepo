@@ -77,13 +77,8 @@ if [ $DDF -gt 6912 ]; then
   mkdir $DIR/parts
   echo -e "Compressing and Making 1.2GB parts Because of Huge Data Amount \nBe Patient..."
   tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst. || exit 1
-  # Show Total Sizes of the compressed .repo
-  echo -en "Final Compressed size of the consolidated checked-out files is ---  "
-  du -sh ~/project/files/$RecName-$BRANCH-norepo*.tzst*
 else
   tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst * || exit 1
-  echo -en "Final Compressed size of the consolidated checked-out archive is ---  "
-  du -sh ~/project/files/$RecName-$BRANCH-norepo*.tzst
 fi
 
 echo -e "Compression Done"
@@ -95,7 +90,7 @@ md5sum * > $RecName-$BRANCH-norepo-$datetime.tzst.md5sum
 cat $RecName-$BRANCH-norepo-$datetime.tzst.md5sum
 
 # Show Total Sizes of the compressed files
-echo -en "Final Compressed size of the checked-out files is ---  "
+echo -en "Final Compressed size of the compressed archive ---  "
 du -sh ~/project/files/*
 
 # Make a Compressed file list for future reference
@@ -112,17 +107,24 @@ rm -rf $RecName
 echo -e "Preparing for Upload"
 cd ~/project/files/
 for file in $RecName-$BRANCH*; do
-  echo -e "\nUploading $file ...\n"
-  wput $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/
-  sleep 2s
+  echo -e "\nUploading $file to AFH ...\n"
+  curl -sS --progress-bar --ftp-create-dirs --ftp-pasv -T $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/v$version/
+  sleep 1s
 done
 echo -e " Done uploading to AFH"
 
 cd ~/project/
+echo -e "\nUploading $file to SF...\n"
+{
+  echo "exit" | sshpass -p "$SFPass" ssh -tto StrictHostKeyChecking=no $SFUser@shell.sourceforge.net create
+} 2>/dev/null
+rsync -arvPz --rsh="sshpass -p $SFPass ssh -l $SFUser" files/ $SFUser@shell.sourceforge.net:/home/frs/project/transkadoosh/$RecName-NoRepo/v$version/
+echo -e " Done uploading to SF"
+
 rm -f files/core* || true
-ghr -u $GitHubName -t $GITHUB_TOKEN -b "Releasing Latest TWRP Sources using OmniROM's Minimal-Manifest" v$version-$datetime files/
+ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} \
+  -b "Releasing Latest TWRP Sources using OmniROM's Minimal-Manifest" v$version-$datetime files/
 
 echo -e "\nCongratulations! Job Done!"
 
 rm -rf files/
-
