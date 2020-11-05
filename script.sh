@@ -107,9 +107,9 @@ printf "Final Compressed size of the compressed archive ---  " && du -sh ~/proje
 
 # Make a Compressed file list for future reference
 cd ~/project/$RecName
-ls -AhxcRis . >> $RecName-$BRANCH-*.file.log || printf "filelist generation error\n"
-tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo.filelist.tzst *.file.log
-rm *.file.log
+find . -type f | cut -d'/' -f'2-' > $RecName-$BRANCH-$datetime-filelist.txt || printf "filelist generation error\n"
+tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.filelist.tzst *.filelist.txt
+rm *.filelist.txt
 
 cd $DIR
 printf "Basic Cleanup\n"
