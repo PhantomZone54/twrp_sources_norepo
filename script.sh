@@ -51,6 +51,15 @@ printf "Cleaning up the .repo, no use of it now\n"
 rm -rf .repo
 mkdir -p .repo && mv repomanifests/manifests .repo/ && ln -s .repo/manifests/default.xml .repo/manifest.xml && rm -rf repomanifests
 
+
+find . \( \( -type d -a -name ".git" \) -o \( -type f -a \( -name ".gitignore" -o -name ".gitmodules" -o -name ".gitattributes" \) \) \) -exec rm -rf -- '{}' +; 2>/dev/null
+
+{
+rm -rf prebuilts/android-emulator/darwin-x86_64 prebuilts/android-emulator/windows
+rm -rf prebuilts/misc/android-mips64 prebuilts/misc/android-mips prebuilts/misc/darwin-x86_64 prebuilts/misc/darwin-x86/ prebuilts/misc/windows
+rm -rf prebuilts/tools/darwin-x86_64 prebuilts/tools/darwin-x86_64 prebuilts/tools/windows-x86_64 prebuilts/tools/windows
+} 2>/dev/null
+
 # Use the patched roomservice file to fix broken lunch munu
 md5sum build/tools/roomservice.py 2>/dev/null || md5sum vendor/omni/build/tools/roomservice.py 2>/dev/null
 find build/tools -maxdepth 2 -type f -name "roomservice.py" -exec rm -rf {} \; 2>/dev/null
@@ -95,7 +104,11 @@ else
   tar -I'zstd -19 -T3 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst * || exit 1
 fi
 
-printf "Compression Done\n"
+if [[ $? -eq 0 ]]; then
+  printf "Compression Done\n"
+else
+  printf "Compression Failed! \n" && exit 1
+fi
 
 cd ~/project/files
 
@@ -110,12 +123,7 @@ printf "\n\n"
 # Make a Compressed file list for future reference
 cd ~/project/$RecName
 find . -type f | cut -d'/' -f'2-' > $RecName-$BRANCH-$datetime-filelist.txt || printf "filelist generation error\n"
-tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.filelist.tzst *filelist.txt
-rm *filelist.txt
-
-cd $DIR
-printf "Basic Cleanup\n"
-rm -rf $RecName
+tar -I'zstd -19 -T3 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.filelist.tzst *filelist.txt
 
 printf "Preparing for Upload...\n"
 cd ~/project/files/
@@ -124,19 +132,26 @@ for file in $RecName-$BRANCH*; do
   curl --progress-bar --ftp-create-dirs --ftp-pasv -T $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/TWRP-v$version/
   sleep 1s
 done
-printf "Done uploading to AndroidFileHost\n"
+[[ $? -eq 0 ]] && printf "Done uploading to AndroidFileHost\n"
 
 cd ~/project/
 printf "Uploading %s to SourceForge...\n" $RecName-$BRANCH
-{
+sf_gen=''
+until [ $sf_gen -eq 0 ]; do
   printf "exit\n" | sshpass -p "$SFPass" ssh -tto StrictHostKeyChecking=no $SFUser@shell.sourceforge.net create
-  sleep 2s
-  printf "exit\n" | sshpass -p "$SFPass" ssh -tto StrictHostKeyChecking=no $SFUser@shell.sourceforge.net create
-} 2>/dev/null && printf "Process ended with %d\n" $?
-sleep 3s
-rsync -arvPz --rsync-path="mkdir -p /home/frs/project/transkadoosh/$RecName-NoRepo/TWRP-v$version/ && rsync" \
-  --rsh="sshpass -p $SFPass ssh -v -l $SFUser" files/ $SFUser@shell.sourceforge.net:/home/frs/project/transkadoosh/$RecName-NoRepo/TWRP-v$version/
-printf "Done uploading to SourceForge\n"
+  sf_gen=$?
+  printf "SF FRS SSH returned %d\n" $sf_gen
+  sleep 1s
+done
+sleep 2s
+sf_return=''
+until [ $sf_return -eq 0 ]; do
+  rsync -arvPz --rsync-path="mkdir -p /home/frs/project/transkadoosh/$RecName-NoRepo/TWRP-v$version/ && rsync" \
+    --rsh="sshpass -p $SFPass ssh -l $SFUser" files/ $SFUser@shell.sourceforge.net:/home/frs/project/transkadoosh/$RecName-NoRepo/TWRP-v$version/
+  sf_return=$?
+  sleep 1s
+done
+[[ $? -eq 0 ]] && printf "Done uploading to SourceForge\n"
 
 rm -f files/core* || true
 ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} \
@@ -144,4 +159,3 @@ ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAM
 
 printf "\nCongratulations! Job Done!\n"
 
-rm -rf files/
