@@ -52,20 +52,22 @@ rm -rf .repo
 mkdir -p .repo && mv repomanifests/manifests .repo/ && ln -s .repo/manifests/default.xml .repo/manifest.xml && rm -rf repomanifests
 
 # Use the patched roomservice file to fix broken lunch munu
+md5sum build/tools/roomservice.py 2>/dev/null || md5sum vendor/omni/build/tools/roomservice.py 2>/dev/null
 find build/tools -maxdepth 2 -type f -name "roomservice.py" -exec rm -rf {} \; 2>/dev/null
 find vendor/omni/build/tools -maxdepth 2 -type f -name "roomservice.py" -exec rm -rf {} \; 2>/dev/null
-if [[ $BRANCH =~ android-5.1 ]]; then
+if [[ $BRANCH =~ twrp-5.1 ]]; then
   curl -sL https://gist.github.com/rokibhasansagar/247ddd4ef00dcc9d3340397322051e6a/raw/roomservice_51.py -o build/tools/roomservice.py
-elif [[ $BRANCH =~ android-6.0 ]]; then
+elif [[ $BRANCH =~ twrp-6.0 ]]; then
   curl -sL https://gist.github.com/rokibhasansagar/247ddd4ef00dcc9d3340397322051e6a/raw/roomservice_60.py -o build/tools/roomservice.py
-elif [[ $BRANCH =~ android-7.1 ]]; then
+elif [[ $BRANCH =~ twrp-7.1 ]]; then
   curl -sL https://gist.github.com/rokibhasansagar/247ddd4ef00dcc9d3340397322051e6a/raw/roomservice_71.py -o build/tools/roomservice.py
-elif [[ $BRANCH =~ android-8.1 ]]; then
+elif [[ $BRANCH =~ twrp-8.1 ]]; then
   curl -sL https://gist.github.com/rokibhasansagar/247ddd4ef00dcc9d3340397322051e6a/raw/roomservice_81.py -o vendor/omni/build/tools/roomservice.py
-elif [[ $BRANCH =~ android-9.1 ]]; then
-  curl -sL https://gist.github.com/rokibhasansagar/247ddd4ef00dcc9d3340397322051e6a/raw/roomservice_91.py -o vendor/omni/build/tools/roomservice.py
+elif [[ $BRANCH =~ twrp-9.0 ]]; then
+  curl -sL https://gist.github.com/rokibhasansagar/247ddd4ef00dcc9d3340397322051e6a/raw/roomservice_90.py -o vendor/omni/build/tools/roomservice.py
 fi
 chmod 755 build/tools/roomservice.py vendor/omni/build/tools/roomservice.py 2>/dev/null
+md5sum build/tools/roomservice.py 2>/dev/null || md5sum vendor/omni/build/tools/roomservice.py 2>/dev/null
 
 cd $DIR
 DDF=$(du -sh -BM $RecName | awk '{print $1}' | sed 's/M//')
@@ -86,10 +88,9 @@ sleep 2s
 mkdir -p ~/project/files/
 datetime=$(date +%Y%m%d)
 
-if [ $DDF -gt 6912 ]; then
-  mkdir $DIR/parts
-  printf "Compressing and Making 1.2GB parts Because of Huge Data Amount \nBe Patient...\n"
-  tar -I'zstd -19 -T3 --long --adapt --format=zstd' -cf - * | split -b 1228M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst. || exit 1
+if [ $DDF -gt 6144 ]; then
+  printf "Compressing and Making 1 GB parts Because of Huge Data Amount \nBe Patient...\n"
+  tar -I'zstd -19 -T3 --long --adapt --format=zstd' -cf - * | split -b 1024M - ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst. || exit 1
 else
   tar -I'zstd -19 -T3 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.tzst * || exit 1
 fi
@@ -102,14 +103,15 @@ printf "Taking md5 Hash\n"
 md5sum * > $RecName-$BRANCH-norepo-$datetime.tzst.md5sum
 cat $RecName-$BRANCH-norepo-$datetime.tzst.md5sum
 
-# Show Total Sizes of the compressed files
-printf "Final Compressed size of the compressed archive ---  " && du -sh ~/project/files/*
+printf "Final Compressed archives --- \n"
+ls -lA ~/project/files/
+printf "\n\n"
 
 # Make a Compressed file list for future reference
 cd ~/project/$RecName
 find . -type f | cut -d'/' -f'2-' > $RecName-$BRANCH-$datetime-filelist.txt || printf "filelist generation error\n"
-tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.filelist.tzst *.filelist.txt
-rm *.filelist.txt
+tar -I'zstd -19 -T2 --long --adapt --format=zstd' -cf ~/project/files/$RecName-$BRANCH-norepo-$datetime.filelist.tzst *filelist.txt
+rm *filelist.txt
 
 cd $DIR
 printf "Basic Cleanup\n"
@@ -119,19 +121,21 @@ printf "Preparing for Upload...\n"
 cd ~/project/files/
 for file in $RecName-$BRANCH*; do
   printf "Uploading %s...\n" $file
-  curl --progress-bar --ftp-create-dirs --ftp-pasv -T $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/v$version/
+  curl --progress-bar --ftp-create-dirs --ftp-pasv -T $file ftp://"$FTPUser":"$FTPPass"@"$FTPHost"//$RecName-NoRepo/TWRP-v$version/
   sleep 1s
 done
 printf "Done uploading to AndroidFileHost\n"
 
 cd ~/project/
-printf "Uploading %s to SourceForge...\n" $file
+printf "Uploading %s to SourceForge...\n" $RecName-$BRANCH
 {
   printf "exit\n" | sshpass -p "$SFPass" ssh -tto StrictHostKeyChecking=no $SFUser@shell.sourceforge.net create
-} 2>/dev/null
-sleep 1s
-rsync -arvPz --rsync-path="mkdir -p /home/frs/project/transkadoosh/$RecName-NoRepo/v$version/ && rsync" \
-  --rsh="sshpass -p $SFPass ssh -l $SFUser" files/ $SFUser@shell.sourceforge.net:/home/frs/project/transkadoosh/$RecName-NoRepo/v$version/
+  sleep 2s
+  printf "exit\n" | sshpass -p "$SFPass" ssh -tto StrictHostKeyChecking=no $SFUser@shell.sourceforge.net create
+} 2>/dev/null && printf "Process ended with %d\n" $?
+sleep 3s
+rsync -arvPz --rsync-path="mkdir -p /home/frs/project/transkadoosh/$RecName-NoRepo/TWRP-v$version/ && rsync" \
+  --rsh="sshpass -p $SFPass ssh -v -l $SFUser" files/ $SFUser@shell.sourceforge.net:/home/frs/project/transkadoosh/$RecName-NoRepo/TWRP-v$version/
 printf "Done uploading to SourceForge\n"
 
 rm -f files/core* || true

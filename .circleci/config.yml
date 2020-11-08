@@ -7,13 +7,18 @@ executors:
         auth:
           username: "$DOCKER_USERNAME"
           password: "$DOCKERHUB_TOKEN"
-    environment:
-      RecName: "MinimalOmniRecovery"
-      Link: "https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git"
+
+env_legacy: &env_legacy
+  RecName: "MinimalOmniRecovery"
+  Link: "https://github.com/OmniROM-Legacy/minimal_manifest_twrp_omni.git"
+  BRANCH: "<< parameters.platform >>"
+
+env_minimal: &env_minimal
+  RecName: "MinimalOmniRecovery"
+  Link: "https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git"
+  BRANCH: "<< parameters.platform >>"
 
 default: &default
-  environment:
-    BRANCH: "<< parameters.platform >>"
   parameters:
     platform:
       type: string
@@ -30,12 +35,18 @@ default: &default
 jobs:
   build_a:
     executor: alpine
+    environment:
+      <<: *env_legacy
     <<: *default
   build_b:
     executor: alpine
+    environment:
+      <<: *env_minimal
     <<: *default
   build_c:
     executor: alpine
+    environment:
+      <<: *env_minimal
     <<: *default
 
 workflows:
